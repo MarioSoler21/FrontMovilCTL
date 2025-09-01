@@ -13,7 +13,7 @@ export default function Home() {
   const { user } = useAuth();
   const { language } = useLanguage();
 
-  // ====== Plantilla (datos de ejemplo) ======
+
   const featuredVideos: Video[] = [
     { id: "v1", title: "SAR: Declaración Mensual", thumb: "https://placehold.co/320x200/png?text=SAR", duration: "12:45" },
     { id: "v2", title: "SPSS: Introducción",       thumb: "https://placehold.co/320x200/png?text=SPSS", duration: "08:10" },
@@ -24,14 +24,13 @@ export default function Home() {
     { id: "a1", title: "Actualización SAR 2025", body: "Cambios en formatos y fechas límite." },
     { id: "a2", title: "Taller SPSS - Básico",   body: "Sesión práctica este viernes." },
   ];
-  // Para “no hay información”, deja el arreglo vacío: const announcements: Announcement[] = [];
 
   const plans: Plan[] = [
-    { id: "p1", name: "Básico", price: "L 0",    desc: "Acceso a material libre.", features: ["Lecturas", "2 videos"] },
-    { id: "p2", name: "Pro",    price: "L 299",  desc: "Para estudiantes.",        features: ["Cursos SAR", "SPSS básico", "Soporte por WhatsApp"] },
-    { id: "p3", name: "Premium",price: "L 699",  desc: "Para equipos.",            features: ["Todo Pro", "Casos prácticos", "Plantillas + Q&A"] },
+    { id: "p1", name: "Básico",   price: "L 0",   desc: "Acceso a material libre.", features: ["Lecturas", "2 videos"] },
+    { id: "p2", name: "Pro",      price: "L 299", desc: "Para estudiantes.",        features: ["Cursos SAR", "SPSS básico", "Soporte por WhatsApp"] },
+    { id: "p3", name: "Premium",  price: "L 699", desc: "Para equipos.",            features: ["Todo Pro", "Casos prácticos", "Plantillas + Q&A"] },
   ];
-  // ==========================================
+  // ==========================================--------------------------------------------
 
   const renderVideo = ({ item }: { item: Video }) => (
     <TouchableOpacity style={styles.videoCard}>
@@ -56,7 +55,7 @@ export default function Home() {
 
   return (
     <View style={styles.root}>
-      {/* Encabezado simple */}
+
       <View style={styles.header}>
         <Text style={styles.welcome}>
           {`Bienvenido${user?.email ? `, ${user.email}` : ""}`}
@@ -64,10 +63,12 @@ export default function Home() {
         <Text style={styles.subtle}>{`Idioma: ${language.toUpperCase()}`}</Text>
       </View>
 
-      {/* Sección: Videos destacados */}
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Videos destacados</Text>
-        <CustomButton title="Ver todos" onPress={() => {}} variant="secondary" />
+
+        <TouchableOpacity onPress={() => {}}>
+          <Text style={styles.linkText}>Ver todos</Text>
+        </TouchableOpacity>
       </View>
       {featuredVideos.length ? (
         <FlatList
@@ -82,9 +83,12 @@ export default function Home() {
         <Empty text="No hay videos para mostrar" />
       )}
 
-      {/* Sección: Anuncios */}
+      {/* Sección: Anuncios espero que me los de*/}
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Anuncios</Text>
+        <TouchableOpacity onPress={() => {}}>
+          <Text style={styles.linkText}>Ver más</Text>
+        </TouchableOpacity>
       </View>
       {announcements.length ? (
         <FlatList
@@ -99,7 +103,6 @@ export default function Home() {
         <Empty text="No hay anuncios disponibles" />
       )}
 
-      {/* Sección: Planes */}
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Planes</Text>
       </View>
@@ -148,6 +151,13 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   sectionTitle: { color: C.dim, fontSize: 16, fontWeight: "800" },
+
+  linkText: {
+    color: C.sub,
+    fontWeight: "700",
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+  },
 
   hList: { paddingHorizontal: 12 },
 
