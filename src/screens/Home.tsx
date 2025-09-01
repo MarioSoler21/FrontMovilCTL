@@ -83,8 +83,7 @@ export default function Home() {
         <Empty text="No hay videos para mostrar" />
       )}
 
-      {/* Sección: Anuncios espero que me los de*/}
-      <View style={styles.sectionHeader}>
+       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Anuncios</Text>
         <TouchableOpacity onPress={() => {}}>
           <Text style={styles.linkText}>Ver más</Text>
