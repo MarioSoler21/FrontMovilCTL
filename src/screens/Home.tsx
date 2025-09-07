@@ -1,4 +1,4 @@
-// src/screens/Home.tsx
+
 import React from "react";
 import {
   FlatList,
@@ -65,7 +65,7 @@ export default function Home({ correo }: { correo?: string }) {
     <SafeAreaView style={styles.root}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
 
-        {/* HERO con fondo azul oscuro */}
+
         <View style={styles.heroWrap}>
           <ImageBackground
             source={{ uri: "" }}  
@@ -85,7 +85,7 @@ export default function Home({ correo }: { correo?: string }) {
           </ImageBackground>
         </View>
 
-        {/* Bienvenida */}
+ 
         <View style={styles.header}>
           <Text style={styles.welcome}>
             {`Bienvenido${correoMostrar ? `, ${correoMostrar}` : ""}`}
@@ -93,7 +93,7 @@ export default function Home({ correo }: { correo?: string }) {
           <Text style={styles.subtle}>{`Idioma: ${language.toUpperCase()}`}</Text>
         </View>
 
-        {/* Videos */}
+
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Videos destacados</Text>
           <TouchableOpacity><Text style={styles.linkText}>Ver todos</Text></TouchableOpacity>
@@ -109,7 +109,7 @@ export default function Home({ correo }: { correo?: string }) {
           />
         ) : (<Empty text="No hay videos para mostrar" />)}
 
-        {/* Anuncios */}
+  
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Anuncios</Text>
           <TouchableOpacity><Text style={styles.linkText}>Ver más</Text></TouchableOpacity>
@@ -125,7 +125,7 @@ export default function Home({ correo }: { correo?: string }) {
           />
         ) : (<Empty text="No hay anuncios disponibles" />)}
 
-        {/* Planes */}
+ 
         <View style={styles.sectionHeader}><Text style={styles.sectionTitle}>Planes</Text></View>
         <View style={styles.plansWrap}>
           {plans.map((p) => (
@@ -149,7 +149,7 @@ export default function Home({ correo }: { correo?: string }) {
 
 const C = {
   bg: "#0B1026",
-  hero: "#1a237e", // azul oscuro
+  hero: "#1a237e",
   card: "#1E1B4B",
   border: "#3B82F6",
   accent: "#6D28D9",
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: C.bg },
   scrollContent: { paddingBottom: 24 },
 
-  // HERO
+
   heroWrap: {
     height: 260,
     marginBottom: 16,

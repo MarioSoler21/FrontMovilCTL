@@ -5,8 +5,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 type ThemeMode = "auto" | "light" | "dark";
 
 type Theme = {
-  mode: ThemeMode;          // preferencia del usuario
-  isDark: boolean;          // útil para condicionales simples
+  mode: ThemeMode;          
+  isDark: boolean;          
   colors: {
     background: string;
     card: string;
@@ -24,7 +24,7 @@ type Theme = {
 type ThemeContextType = {
   theme: Theme;
   setMode: (mode: ThemeMode) => void;
-  toggleDarkLight: () => void; // alterna entre light/dark si no quieres auto
+  toggleDarkLight: () => void; 
 };
 
 const THEME_KEY = "@theme_mode";
@@ -81,7 +81,6 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     })();
   }, []);
 
-  // Escuchar cambios del sistema cuando esté en modo "auto"
   useEffect(() => {
     if (mode !== "auto") return;
     const sub = Appearance.addChangeListener(({ colorScheme }) => {
@@ -93,7 +92,6 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const isDark = useMemo<boolean>(() => {
     if (mode === "light") return false;
     if (mode === "dark") return true;
-    // "auto": seguir el sistema
     return (systemScheme as ColorSchemeName) === "dark";
   }, [mode, systemScheme]);
 
