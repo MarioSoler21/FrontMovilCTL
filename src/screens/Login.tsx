@@ -1,42 +1,44 @@
-import { Alert, Button, StyleSheet, Text, View, ImageBackground } from "react-native";
+import React, { useMemo, useState } from "react";
+import { Alert, StyleSheet, Text, View, ImageBackground } from "react-native";
 import CustomButton from "../components/CustomButton";
 import CustomInput from "../components/CustomInput";
-import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { i18n, useLanguage } from "../contexts/LanguageContext";
+import { i18n } from "../contexts/LanguageContext";
+import { useTheme } from "../contexts/themeContext";
 
 export default function Login({ navigation }: any) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(""); // extra para feedback visual
+  const [error, setError] = useState("");
 
-  const { login, isAllowed } = useAuth();
+  const { login } = useAuth();
+  const { theme } = useTheme();
 
-  const handleOnChangeEmail = (val: string) => setEmail(val);
-  const handleOnChangePassword = (val: string) => setPassword(val);
+  const styles = useMemo(() => makeStyles(theme.colors), [theme.colors]);
 
   const handleLogin = () => {
-    try {
-      setError("");
-      if (!email || !password) {
-        setError("Por favor complete todos los campos");
-        Alert.alert("Error", "Por favor complete todos los campos");
-        return;
-      }
-      if (!email.includes("@")) {
-        setError("Correo inválido");
-        return;
-      }
-      // navegación + auth (igual que tu flujo actual)
-      login(email);
-      navigation.navigate("HomeScreen", { correo: email });
-    } catch (e) {
-      setError("Error al iniciar sesión");
+    setError("");
+
+    if (!email || !password) {
+      const msg = "Por favor complete todos los campos";
+      setError(msg);
+      Alert.alert("Error", msg);
+      return;
     }
+
+    if (!email.includes("@")) {
+      const msg = i18n.t("invalidEmail");
+      setError(msg);
+      Alert.alert("Error", msg);
+      return;
+    }
+
+    // Autentica y ve a la pantalla principal con tabs
+    login(email); // <- Tipado correcto (string)
+    navigation.replace("MainScreen", { initialTab: "learning", correo: email });
   };
 
   const handleGoogleLogin = () => {
-    // Placeholder para la demo (si luego integrás Supabase/Expo Auth, lo conectás aquí)
     Alert.alert("Google", "Login con Google (demo)");
   };
 
@@ -49,17 +51,19 @@ export default function Login({ navigation }: any) {
       style={styles.bgImage}
       resizeMode="cover"
     >
-      <View style={styles.overlay} />
+      <View style={[styles.overlay, { backgroundColor: theme.isDark ? "rgba(0,0,0,0.45)" : "rgba(0,0,0,0.25)" }]} />
       <View style={styles.container}>
-        <View style={styles.backgroundCard}>
-          <Text style={styles.title}>Iniciar sesión</Text>
+        <View style={[styles.backgroundCard, { backgroundColor: theme.isDark ? "rgba(20,20,28,0.92)" : "rgba(255,255,255,0.92)", borderColor: theme.colors.border }]}>
+          <Text style={[styles.title, { color: theme.colors.text }]}>
+            {i18n.t("signIn")}
+          </Text>
 
           <View style={styles.spacing}>
             <CustomInput
               type="email"
               value={email}
-              title={"Correo"}
-              onChange={handleOnChangeEmail}
+              title="Correo"
+              onChange={setEmail}
             />
           </View>
 
@@ -67,30 +71,28 @@ export default function Login({ navigation }: any) {
             <CustomInput
               type="password"
               value={password}
-              title={"Contraseña"}
-              onChange={handleOnChangePassword}
+              title="Contraseña"
+              onChange={setPassword}
             />
           </View>
 
-          {!!error && <Text style={styles.errorText}>{error}</Text>}
+          {!!error && <Text style={[styles.errorText, { color: theme.isDark ? "#ffb4b4" : "#b91c1c" }]}>{error}</Text>}
 
           <CustomButton title={i18n.t("signIn")} onPress={handleLogin} />
 
           <View style={{ height: 12 }} />
-
-          {/* Botón estilo "outline/light" usando tu variant secondary */}
           <CustomButton
             title="Iniciar sesión con Google"
             onPress={handleGoogleLogin}
-            variant={"secondary"}
+            variant="secondary"
           />
 
           <View style={{ height: 12 }} />
-          <CustomButton title={i18n.t("signUp")} onPress={() => {}} variant={"secondary"} />
+          <CustomButton title={i18n.t("signUp")} onPress={() => {}} variant="secondary" />
           <View style={{ height: 8 }} />
-          <CustomButton title={i18n.t("forgotPassword")} onPress={() => {}} variant={"tertiary"} />
+          <CustomButton title={i18n.t("forgotPassword")} onPress={() => {}} variant="tertiary" />
 
-          <Text style={styles.footerText}>
+          <Text style={[styles.footerText, { color: theme.colors.subtitle }]}>
             ¿No tienes una cuenta? Regístrate
           </Text>
         </View>
@@ -99,55 +101,38 @@ export default function Login({ navigation }: any) {
   );
 }
 
-const styles = StyleSheet.create({
-  bgImage: {
-    flex: 1,
-    width: "100%",
-    height: "100%",
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.45)", // capa oscura como en el web
-  },
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 20,
-  },
-  backgroundCard: {
-    width: "88%",
-    maxWidth: 500,
-    backgroundColor: "rgba(20,20,28,0.92)", // “bg-dark”
-    borderRadius: 16,
-    padding: 24,
-    // sombra iOS
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    // sombra Android
-    elevation: 8,
-  },
-  title: {
-    color: "#fff",
-    fontSize: 22,
-    fontWeight: "700",
-    textAlign: "center",
-    marginBottom: 16,
-  },
-  spacing: {
-    marginBottom: 12,
-  },
-  errorText: {
-    color: "#ffb4b4",
-    marginBottom: 10,
-    textAlign: "center",
-  },
-  footerText: {
-    color: "#d0d0d0",
-    textAlign: "center",
-    marginTop: 10,
-    fontSize: 12,
-  },
-});
+type Colors = {
+  background: string;
+  card: string;
+  text: string;
+  subtitle: string;
+  primary: string;
+  border: string;
+  inputBg: string;
+  inputText: string;
+  placeholder: string;
+  buttonText: string;
+};
+
+const makeStyles = (c: Colors) =>
+  StyleSheet.create({
+    bgImage: { flex: 1, width: "100%", height: "100%" },
+    overlay: { ...StyleSheet.absoluteFillObject },
+    container: { flex: 1, alignItems: "center", justifyContent: "center", padding: 20 },
+    backgroundCard: {
+      width: "88%",
+      maxWidth: 500,
+      borderRadius: 16,
+      padding: 24,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.25,
+      shadowRadius: 8,
+      elevation: 8,
+      borderWidth: 1,
+    },
+    title: { fontSize: 22, fontWeight: "700", textAlign: "center", marginBottom: 16 },
+    spacing: { marginBottom: 12 },
+    errorText: { marginBottom: 10, textAlign: "center" },
+    footerText: { textAlign: "center", marginTop: 10, fontSize: 12 },
+  });

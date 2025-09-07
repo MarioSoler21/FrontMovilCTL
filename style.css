@@ -1,0 +1,190 @@
+body {
+  background-color: #f8f9fa;
+  font-family: 'Segoe UI', sans-serif;
+  color: #212529;
+}
+
+.navbar {
+  background-color: #ffffff !important;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.navbar-brand {
+  font-weight: bold;
+  color: #0d6efd !important;
+}
+
+.nav-link {
+  color: #495057 !important;
+}
+
+.nav-link:hover {
+  color: #0d6efd !important;
+}
+
+.btn-primary {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+/* LOGOS Carrucel eN MOVIMIENTO */
+.logo-slider-container {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+}
+
+.logo-slider {
+  display: flex;
+  animation: scrollLogos 40s linear infinite;
+  width: max-content;
+}
+
+.logo-group {
+  display: flex;
+}
+
+.logo-group img {
+  margin-right: 60px;
+  height: 60px;
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.3));
+}
+
+@keyframes scrollLogos {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+.btn-whatsapp {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: white;
+  background: linear-gradient(90deg, #2f70c4, #2f70c4);
+  border: none;
+  border-radius: 50px;
+  text-decoration: none;
+  transition: background 0.4s ease-in-out;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.btn-whatsapp:hover {
+  background: linear-gradient(90deg, #2f70c4 0%, #25D366 100%);
+  color: white;
+}
+.hero-blur-effect {
+  filter: blur(3px);
+  transition: filter 0.3s ease;
+}
+
+.hero-text-fade {
+  opacity: 0.8;
+  transition: opacity 0.9s ease;
+}
+.transition-opacity {
+  transition: opacity 1s ease-in-out;
+}
+
+.opacity-0 {
+  opacity: 0;
+}
+
+.opacity-100 {
+  opacity: 1;
+}
+
+.transition-navbar {
+  transition: top 0.4s ease;
+  z-index: 1040; 
+}
+
+.navbar-visible {
+  top: 0;
+}
+
+.navbar-hidden {
+  top: -90px;
+}
+body {
+  padding-top: 40px; 
+}
+
+body {
+  background-color: #121430;
+  font-family: 'Segoe UI', sans-serif;
+  color: #eaeaea;
+}
+
+.form-control, .form-select {
+  background-color: #f5f5f5;
+  border-radius: 0.75rem;
+}
+
+.table th, .table td {
+  vertical-align: middle;
+}
+
+.table thead {
+  background: #dee2e6;
+}
+
+.bg-dark-subtle {
+  background-color: rgba(33, 37, 41, 0.1);
+  backdrop-filter: blur(4px);
+}
+.navbar-nav .nav-link {
+  color: #1b1b1b !important;
+  transition: color 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover {
+  color: #2f70c4 !important;
+  text-decoration: underline;
+}
+
+.icon-link {
+  color: #2f70c4;
+  font-size: 1.2rem;
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.icon-link:hover {
+  transform: scale(1.2);
+  color: #1b1f3b;
+}
+.animated-title {
+  animation: slideDownFade 1s ease-out;
+  font-size: 1.8rem;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes slideDownFade {
+  0% {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0px);
+    opacity: 1;
+  }
+}
+.animated-title {
+  background: linear-gradient(90deg, #2f70c4, #5732b9);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: slideDownFade 1s ease-out;
+}
+.animated-title {
+  background: linear-gradient(90deg, #2f70c4, #5732b9);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: slideDownFade 1s ease-out;
+}

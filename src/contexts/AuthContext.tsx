@@ -1,39 +1,37 @@
-import { createContext, useContext, useState } from "react"
+import { createContext, useContext, useState } from "react";
 
-type User = {
-    email:string,
-} | null;
+type User = { email: string } | null;
 
 const AuthContext = createContext<{
-    user: User,
-    isAllowed: Boolean,
-    login: (email: string) => void,
-    logout: () => void,
-} | null> (null); 
+  user: User;
+  isAllowed: boolean;
+  login: (email: string) => void;
+  logout: () => void;
+} | null>(null);
 
-//medio para exponer la manipulacion de estado a la aplicacion o componentes hijos
-export const AuthProvider = ({children}: {children: React.ReactNode}) => {
-    const [user, setUser] = useState<User>(null);
-    const [isAllowed, setIsAllowed] = useState<Boolean>(false);
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUser] = useState<User>(null);
+  const [isAllowed, setIsAllowed] = useState<boolean>(false);
 
-    const login = (email: any) =>{
-        setUser({email: email});
-        setIsAllowed(true);
-    }
-    const logout = () => {
-        setUser(null);
-        setIsAllowed(false);
-    }
-    return (
-        <AuthContext.Provider value={{user, isAllowed, login, logout}}>
-            {children}
-        </AuthContext.Provider>
-    )
-}
+  const login = (email: string) => {
+    setUser({ email });
+    setIsAllowed(true);
+  };
 
-//hook para utilizar el contexto en componentes personalizados (e.g login, home)
+  const logout = () => {
+    setUser(null);
+    setIsAllowed(false);
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, isAllowed, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
 export const useAuth = () => {
-    const context = useContext(AuthContext);
-    if (!context) throw new Error("useAuth debe usarse dentro de AuthProvider");
-    return context;
-}
+  const context = useContext(AuthContext);
+  if (!context) throw new Error("useAuth debe usarse dentro de AuthProvider");
+  return context;
+};

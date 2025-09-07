@@ -1,27 +1,42 @@
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React from 'react';
-import Login from './src/screens/Login';
-import Home from './src/screens/Home';
-import { AuthProvider } from './src/contexts/AuthContext';
-import { LanguageProvider } from './src/contexts/LanguageContext';
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+
+import { ThemeProvider } from "./src/contexts/themeContext";
+import { AuthProvider, useAuth } from "./src/contexts/AuthContext";
+import { LanguageProvider } from "./src/contexts/LanguageContext";
+
+import Login from "./src/screens/Login";
+import Home from "./src/screens/Home";
+import MainTabs from "./src/screens/MainTabs";
 
 const Stack = createNativeStackNavigator();
 
-export default function App() {
 
+function RootNavigator() {
+  const { isAllowed } = useAuth();
   return (
-    <LanguageProvider>
-      <AuthProvider>
-        <NavigationContainer>
-            <Stack.Navigator initialRouteName='LoginScreen'>
-                  <Stack.Screen name='LoginScreen' component={Login} /> 
-                  <Stack.Screen name ='HomeScreen' component={Home}/>     
-            </Stack.Navigator>
-        </NavigationContainer>
-      </AuthProvider>
-    </LanguageProvider>
-
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      {isAllowed ? (
+        // ANTES: <Stack.Screen name="Home" component={Home} />
+        <Stack.Screen name="MainScreen" component={MainTabs} />  // <-- TABS
+      ) : (
+        <Stack.Screen name="Login" component={Login} />
+      )}
+    </Stack.Navigator>
   );
-};
+}
 
+export default function App() {
+  return (
+    <ThemeProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <NavigationContainer>
+            <RootNavigator />
+          </NavigationContainer>
+        </AuthProvider>
+      </LanguageProvider>
+    </ThemeProvider>
+  );
+}
