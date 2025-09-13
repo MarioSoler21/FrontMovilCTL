@@ -1,22 +1,21 @@
 // src/screens/MainTabs.tsx
 import React, { useEffect, useMemo, useState } from "react";
-import { View, StyleSheet, Text } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { TabBar } from "../components/TabBar";
 import Home from "./Home";
 import { useTheme } from "../contexts/themeContext";
 import { useRoute, RouteProp } from "@react-navigation/native";
+
+import Featured from "./Featured";
+import Search from "./Search";
+import Wishlist from "./Wishlist";
+import Account from "./Account";
 
 type TabKey = "featured" | "search" | "learning" | "wishlist" | "account";
 type MainRouteParams = { MainScreen?: { initialTab?: TabKey; correo?: string } };
 
 const isValidTab = (v: any): v is TabKey =>
   v === "featured" || v === "search" || v === "learning" || v === "wishlist" || v === "account";
-
-const Placeholder = ({ label, color }: { label: string; color: string }) => (
-  <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-    <Text style={{ color, fontSize: 18 }}>{label}</Text>
-  </View>
-);
 
 export default function MainTabs() {
   const { theme, setMode } = useTheme();
@@ -29,17 +28,15 @@ export default function MainTabs() {
   }, [route.params?.initialTab]);
 
   const styles = useMemo(() => makeStyles(theme.colors), [theme.colors]);
-
-  // <-- NUEVO: alterna solo entre light/dark
   const toggleTheme = () => setMode(theme.isDark ? "light" : "dark");
 
   const renderScreen = () => {
     switch (tab) {
-      case "featured": return <Placeholder label="Destacados" color={theme.colors.text} />;
-      case "search":   return <Placeholder label="Buscar" color={theme.colors.text} />;
+      case "featured": return <Featured />;
+      case "search":   return <Search />;
       case "learning": return <Home />;
-      case "wishlist": return <Placeholder label="Lista de deseos" color={theme.colors.text} />;
-      case "account":  return <Placeholder label="Cuenta" color={theme.colors.text} />;
+      case "wishlist": return <Wishlist />;
+      case "account":  return <Account />; // aquí está el switch de tema
       default:         return null;
     }
   };
@@ -54,8 +51,7 @@ export default function MainTabs() {
         borderColor={theme.colors.border}
         activeColor={theme.colors.text}
         inactiveColor={theme.colors.subtitle}
-        // <-- NUEVO: props para el switch
-        themeSwitch={{ isDark: theme.isDark, onToggle: toggleTheme }}
+        themeSwitch={{ isDark: theme.isDark, onToggle: toggleTheme }} // si quieres también desde la barra
       />
     </View>
   );
