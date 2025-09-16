@@ -1,5 +1,6 @@
 // App.tsx
 import "react-native-gesture-handler";
+
 import React from "react";
 import { StatusBar } from "react-native";
 import { NavigationContainer, Theme as NavTheme } from "@react-navigation/native";
@@ -11,36 +12,53 @@ import { LanguageProvider } from "./src/contexts/LanguageContext";
 
 import Login from "./src/screens/Login";
 import MainTabs from "./src/screens/MainTabs";
+import Register from "./src/screens/Register";
+import Subscribe from "./src/screens/Subscribe"; // 👈 importante
 
-// Si querés tipar las rutas:
-type RootStackParamList = {
-  Login: undefined;
-  MainScreen: { initialTab?: "featured" | "search" | "learning" | "wishlist" | "account"; correo?: string } | undefined;
+export type RootStackParamList = {
+  Login: { prefillEmail?: string } | undefined;
+  RegisterScreen: { prefillEmail?: string } | undefined;
+  MainScreen:
+    | {
+        initialTab?: "featured" | "search" | "learning" | "wishlist" | "account";
+        correo?: string;
+      }
+    | undefined;
+  Subscribe:
+    | {
+        planId: "basic" | "pro" | "premium";
+        planName: string;
+        price: string; // "Gratis" | "L 299" | "L 699"
+      }
+    | undefined;
 };
+
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function RootNavigator() {
   const { isAllowed } = useAuth();
+
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName={isAllowed ? "MainScreen" : "Login"}>
       {isAllowed ? (
-        <Stack.Screen
-          name="MainScreen"
-          component={MainTabs}
-          initialParams={{ initialTab: "search" }} 
-        />
+        <Stack.Group>
+          <Stack.Screen name="MainScreen" component={MainTabs} />
+          <Stack.Screen name="Subscribe" component={Subscribe} />
+        </Stack.Group>
       ) : (
-        <Stack.Screen name="Login" component={Login} />
+        <Stack.Group>
+          <Stack.Screen name="Login" component={Login} />
+          <Stack.Screen name="RegisterScreen" component={Register} />
+          <Stack.Screen name="Subscribe" component={Subscribe} />
+        </Stack.Group>
       )}
     </Stack.Navigator>
   );
 }
 
-
 function AppNavigator() {
   const { theme } = useTheme();
 
-  // Mapeo de tu themeContext -> theme de react-navigation
   const navTheme: NavTheme = {
     dark: theme.isDark,
     colors: {

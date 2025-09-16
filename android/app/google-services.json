@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "877036735732",
-    "project_id": "plataformadecontenido-ctl",
-    "storage_bucket": "plataformadecontenido-ctl.firebasestorage.app"
+    "project_number": "260460437240",
+    "project_id": "ctlpro",
+    "storage_bucket": "ctlpro.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:877036735732:android:4df607bcd978dfe8c762a1",
+        "mobilesdk_app_id": "1:260460437240:android:49a05a62055b5e0850a50d",
         "android_client_info": {
           "package_name": "com.miapprutinas"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBRRAXB8idzPciQ67Tw5eMJu6g_kbA5BfE"
+          "current_key": "AIzaSyB3KjIuXi8EeXRkit3cP_cdUzcSEcLPh94"
         }
       ],
       "services": {

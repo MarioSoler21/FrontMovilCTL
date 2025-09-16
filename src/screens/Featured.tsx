@@ -26,6 +26,8 @@ export default function Featured() {
   // Logos locales
   const logoLaMundial = require("../Img/Lamundial.png");
   const logoLaPrensa  = require("../Img/Laprensa.png");
+  const logoInfra = require("../Img/Infra.png");
+  const logoCorrugados = require("../Img/Corrugados.png");
 
   // Noticias
   const posts: Post[] = [
@@ -87,14 +89,17 @@ export default function Featured() {
       </View>
 
       {/* Logos en rectángulo (sustituye al hero anterior) */}
-      <View style={styles.trustedWrap}>
-        <Text style={styles.trustedTitle}>Las principales empresas confían en CTL</Text>
-        <View style={styles.trustedLogos}>
-          <Image source={logoLaMundial} style={styles.trustedLogo} resizeMode="contain" />
-          <Image source={logoLaPrensa}  style={styles.trustedLogo} resizeMode="contain" />
-        </View>
-        
-      </View>
+<View style={styles.trustedWrap}>
+  <Text style={styles.trustedTitle}>Las principales empresas confían en CTL</Text>
+  <View style={styles.trustedLogos}>
+    <Image source={logoLaMundial} style={styles.trustedLogo} resizeMode="contain" />
+    <Image source={logoLaPrensa}  style={styles.trustedLogo} resizeMode="contain" />
+    <Image source={logoInfra}  style={styles.trustedLogo} resizeMode="contain" />
+    <Image source={logoCorrugados}  style={styles.trustedLogo} resizeMode="contain" />
+  </View>
+</View>
+
+      
 
       {/* Noticias */}
       <View style={styles.sectionHead}>
@@ -136,41 +141,34 @@ const makeStyles = (c: Colors) => {
     welcomeTitle: { color: c.text, fontSize: 24, fontWeight: "800" } as const,
     welcomeSub: { color: muted, marginTop: 4 } as const,
 
+trustedWrap: {
+  borderWidth: 1,              
+  borderColor: "#444",        
+  borderRadius: 12,
+  padding: 16,
+  margin: 16,
+  backgroundColor: "transparent", 
+},
+trustedTitle: {
+  color: "#f5f0f0ff",
+  fontSize: 16,
+  fontWeight: "800",
+  textAlign: "center",
+  marginBottom: 12,
+},
+trustedLogos: {
+  flexDirection: "row",
+  flexWrap: "wrap",
+  justifyContent: "center",
+  gap: 19,
+},
+trustedLogo: {
+  width: 80,
+  height: 40,
+  margin: 5,
+},
 
-    trustedWrap: {
-      marginHorizontal: 16,
-      marginTop: 8,
-      paddingVertical: 18,
-      paddingHorizontal: 16,
-      borderRadius: 12,
-      backgroundColor: c.card,
-      borderWidth: 1,
-      borderColor: c.border,
-      alignItems: "center",
-    } as const,
-    trustedTitle: {
-      color: c.text,
-      fontWeight: "800",
-      textAlign: "center",
-      marginBottom: 10,
-    } as const,
-    trustedLogos: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 24,
-      width: "100%",
-      paddingVertical: 6,
-    } as const,
-    trustedLogo: {
-      height: 28,
-      width: 110,
-    } as const,
-    trustedCTA: {
-      color: c.primary,
-      fontWeight: "700",
-      marginTop: 10,
-    } as const,
+
 
     sectionHead: {
       paddingHorizontal: 16, paddingTop: 16,
