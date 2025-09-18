@@ -13,7 +13,7 @@ import { LanguageProvider } from "./src/contexts/LanguageContext";
 import Login from "./src/screens/Login";
 import MainTabs from "./src/screens/MainTabs";
 import Register from "./src/screens/Register";
-import Subscribe from "./src/screens/Subscribe"; // 👈 importante
+import Subscribe from "./src/screens/Subscribe"; 
 
 export type RootStackParamList = {
   Login: { prefillEmail?: string } | undefined;
@@ -28,7 +28,7 @@ export type RootStackParamList = {
     | {
         planId: "basic" | "pro" | "premium";
         planName: string;
-        price: string; // "Gratis" | "L 299" | "L 699"
+        price: string; 
       }
     | undefined;
 };

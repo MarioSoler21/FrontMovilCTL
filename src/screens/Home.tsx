@@ -1,3 +1,4 @@
+// src/screens/Home.tsx
 import React, { useMemo, useState, useRef } from "react";
 import {
   View,
@@ -11,8 +12,6 @@ import {
   SafeAreaView,
   LayoutChangeEvent,
   Alert,
-  NativeSyntheticEvent,
-  TextInputChangeEventData,
 } from "react-native";
 import { useTheme } from "../contexts/themeContext";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -20,15 +19,29 @@ import { useAuth } from "../contexts/AuthContext";
 import CustomButton from "../components/CustomButton";
 import FloatingWhatsapp from "../components/FloatingWhatsapp";
 import { useNavigation } from "@react-navigation/native";
+import { createCalendarEvent } from "../utils/gcalApi"; // ← usa tu Apps Script
 
 // ===== Tipos =====
+type Colors = {
+  background: string;
+  card: string;
+  text: string;
+  subtitle: string;
+  primary: string;
+  border: string;
+  inputBg: string;
+  inputText: string;
+  placeholder: string;
+  buttonText: string;
+};
+
 type Course = {
   id: string;
   title: string;
   provider: string;
   rating: number;
   reviews: number;
-  price: string; // "Gratis" | "USD 9.99" | "L 299"
+  price: string;
   tag?: "Nuevo" | "Pro" | "Premium";
   thumb?: any;
   category: string;
@@ -43,6 +56,9 @@ type Post = {
   image?: any;
 };
 
+// tu correo: siempre invitado
+const OWNER_EMAIL = "mariodavidsoler12@gmail.com";
+
 const CATEGORIES = [
   "Todos",
   "Consultoría Fiscal",
@@ -54,54 +70,209 @@ const CATEGORIES = [
   "Aduanas",
 ];
 
+// ===== Styles =====
+function makeStyles(c: Colors) {
+  return StyleSheet.create({
+    root: { flex: 1, backgroundColor: c.background },
+    content: { paddingBottom: 24 },
+
+    heroWrap: {
+      height: 240,
+      marginBottom: 8,
+      overflow: "hidden",
+      borderBottomLeftRadius: 24,
+      borderBottomRightRadius: 24,
+      backgroundColor: c.card,
+      borderColor: c.border,
+      borderWidth: 1,
+    },
+    heroTint: { ...StyleSheet.absoluteFillObject, backgroundColor: c.background, opacity: 0.35 },
+    heroInner: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 16, gap: 6 },
+    heroKicker: { color: c.text, opacity: 0.9, fontWeight: "700" },
+    heroTitle: { color: c.text, fontSize: 22, fontWeight: "900", textAlign: "center" },
+    heroSub: { color: c.subtitle, textAlign: "center", marginBottom: 10 },
+
+    searchWrap: { paddingHorizontal: 16, marginTop: 4 },
+    searchInput: {
+      backgroundColor: c.inputBg,
+      color: c.inputText,
+      borderWidth: 1,
+      borderColor: c.border,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+    },
+
+    chipsList: { paddingHorizontal: 10, paddingVertical: 12, gap: 8 },
+    chip: {
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: 999,
+      backgroundColor: c.card,
+      borderWidth: 1,
+      borderColor: c.border,
+      marginHorizontal: 4,
+    },
+    chipActive: { backgroundColor: c.primary, borderColor: c.primary },
+    chipTxt: { color: c.text },
+    chipTxtActive: { color: c.buttonText, fontWeight: "700" },
+
+    sectionHead: {
+      paddingHorizontal: 16,
+      paddingTop: 6,
+      paddingBottom: 6,
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
+    sectionTitle: { color: c.text, fontSize: 18, fontWeight: "800" },
+    link: { color: c.subtitle },
+
+    coursesList: { paddingHorizontal: 12, gap: 12 },
+    courseCard: {
+      width: 250,
+      backgroundColor: c.card,
+      borderRadius: 14,
+      overflow: "hidden",
+      borderWidth: 1,
+      borderColor: c.border,
+      marginHorizontal: 6,
+    },
+    courseImg: { width: "100%", height: 120, backgroundColor: c.border },
+    courseBody: { padding: 10, gap: 4 },
+    courseTitle: { color: c.text, fontWeight: "800" },
+    courseProvider: { color: c.subtitle },
+    courseRating: { color: c.text, opacity: 0.9 },
+    coursePrice: { color: c.text, fontWeight: "900", marginTop: 4 },
+
+    badge: {
+      position: "absolute",
+      left: 10,
+      top: 10,
+      backgroundColor: "#E9F5D0",
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 6,
+    },
+    badgeTxt: { color: "#2E7D32", fontSize: 12, fontWeight: "700" },
+
+    postRow: { flexDirection: "row", gap: 12, paddingVertical: 10, alignItems: "center", paddingHorizontal: 16 },
+    postImg: { width: 92, height: 64, borderRadius: 8, backgroundColor: c.border },
+    tag: { alignSelf: "flex-start", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, marginBottom: 4 },
+    tagTxt: { color: c.text, fontSize: 12 },
+    postTitle: { color: c.text, fontWeight: "800", fontSize: 16 },
+    postSummary: { color: c.subtitle, marginTop: 2 },
+    postDate: { color: c.subtitle, marginTop: 4, fontSize: 12 },
+    sep: { height: 1, backgroundColor: c.border, marginHorizontal: 16 },
+
+    pricingWrap: { paddingHorizontal: 12, gap: 10, marginTop: 6 },
+    planCard: { backgroundColor: c.card, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: c.border },
+    planPro: { borderColor: c.primary, shadowColor: c.primary, shadowOpacity: 0.2, shadowRadius: 8, elevation: 3 },
+    planName: { color: c.text, fontSize: 16, fontWeight: "800" },
+    planPrice: { color: c.text, fontSize: 22, fontWeight: "900", marginVertical: 2 },
+    planDesc: { color: c.subtitle, marginBottom: 6 },
+    planDivider: { height: 1, backgroundColor: c.border, opacity: 0.5, marginVertical: 8 },
+    planItem: { color: c.subtitle, marginBottom: 2 },
+
+    emptyBox: { marginHorizontal: 16, padding: 14, borderRadius: 12, borderWidth: 1, borderColor: c.border, alignItems: "center" },
+    emptyTxt: { color: c.subtitle },
+    footerNote: { color: c.subtitle, textAlign: "center" },
+  });
+}
+
+const qaStyles = (c: Colors) =>
+  StyleSheet.create({
+    card: {
+      backgroundColor: c.card,
+      borderRadius: 14,
+      padding: 14,
+      borderWidth: 1,
+      borderColor: c.border,
+      gap: 6,
+    },
+    title: { color: c.text, fontSize: 18, fontWeight: "800" },
+    label: { color: c.subtitle, marginBottom: 4 },
+    input: {
+      backgroundColor: c.inputBg,
+      color: c.inputText,
+      borderWidth: 1,
+      borderColor: c.border,
+      borderRadius: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+    },
+    chip: {
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: 999,
+      backgroundColor: c.card,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    chipActive: { backgroundColor: c.primary, borderColor: c.primary },
+    chipTxt: { color: c.text },
+    chipTxtActive: { color: c.buttonText, fontWeight: "700" },
+    helper: { color: c.subtitle, marginTop: 8, fontSize: 12 },
+  });
+
+// ===== Helpers =====
+const tagBg = (tag: Post["tag"], c: Colors) => {
+  switch (tag) {
+    case "Gaceta":
+      return { backgroundColor: "#5B8DEF20" };
+    case "Aduanas":
+      return { backgroundColor: "#34C75920" };
+    case "Actualización":
+      return { backgroundColor: "#FFD60A20" };
+    default:
+      return { backgroundColor: c.card };
+  }
+};
+
+// =====================================================
+// ====================  HOME  =========================
+// =====================================================
 export default function Home({ correo }: { correo?: string }) {
   const nav = useNavigation<any>();
   const { theme } = useTheme();
   const { language } = useLanguage();
   const { user, plan, isBasic, isPro, isPremium } = useAuth();
-  const styles = useMemo(() => makeStyles(theme.colors), [theme.colors]);
+  const styles = useMemo(() => makeStyles(theme.colors as Colors), [theme.colors]);
 
   const heroImg = require("../Img/CTL.png");
   const [query, setQuery] = useState("");
   const [activeCat, setActiveCat] = useState("Todos");
 
-  // ===== refs para hacer scroll al scheduler
+  // Scroll a Q&A
   const scrollRef = useRef<ScrollView | null>(null);
   const [qaY, setQaY] = useState(0);
   const onQALayout = (e: LayoutChangeEvent) => setQaY(e.nativeEvent.layout.y);
-  const scrollToQA = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTo({ y: qaY - 12, animated: true });
-    }
-  };
+  const scrollToQA = () => scrollRef.current?.scrollTo({ y: qaY - 12, animated: true });
 
-  // ===== DATA MOCK
+  // Data mock
   const courses: Course[] = [
     { id: "c1", title: "SAR: Declaración Mensual paso a paso", provider: "CTL Academy", rating: 4.8, reviews: 2201, price: "Gratis", tag: "Nuevo", thumb: heroImg, category: "SAR" },
     { id: "c2", title: "Excel Financiero para KPI y Tableros", provider: "CTL Academy", rating: 4.7, reviews: 1754, price: "L 299", tag: "Pro", thumb: heroImg, category: "Excel Financiero" },
     { id: "c3", title: "Aduanas: Cálculo CIF, DAI y ejemplos", provider: "CTL Academy", rating: 4.6, reviews: 1380, price: "L 399", thumb: heroImg, category: "Aduanas" },
     { id: "c4", title: "Auditoría Fiscal: pruebas y papeles de trabajo", provider: "CTL Academy", rating: 4.7, reviews: 980, price: "L 699", tag: "Premium", thumb: heroImg, category: "Auditoría" },
   ];
-
   const posts: Post[] = [
-    { id: "p1", title: "Reformas fiscales publicadas en La Gaceta (jul 2025)", tag: "Gaceta", date: "Jul 18", summary: "Cambios clave que impactan facturación, retenciones y cronograma.", image: heroImg },
-    { id: "p2", title: "Aduanas: nueva tabla de aranceles para repuestos", tag: "Aduanas", date: "Jul 15", summary: "Ejemplos prácticos con cálculo de CIF y DAI, errores comunes.", image: heroImg },
-    { id: "p3", title: "Actualización SAR: calendario de presentación mensual", tag: "Actualización", date: "Jul 10", summary: "Fechas límite, sanciones y buenas prácticas para cumplir.", image: heroImg },
+    { id: "p1", title: "Reformas fiscales publicadas en La Gaceta (jul 2025)", tag: "Gaceta", date: "Jul 18", summary: "Cambios clave…", image: heroImg },
+    { id: "p2", title: "Aduanas: nueva tabla de aranceles para repuestos", tag: "Aduanas", date: "Jul 15", summary: "Ejemplos prácticos…", image: heroImg },
+    { id: "p3", title: "Actualización SAR: calendario de presentación mensual", tag: "Actualización", date: "Jul 10", summary: "Fechas límite…", image: heroImg },
   ];
 
   const correoMostrar = (user as any)?.email ?? correo ?? "";
 
-  // ===== GATING por plan
+  // Gating por plan
   const courseAllowedByPlan = (c: Course) => {
     if (isPremium) return true;
-    if (isPro) return c.tag !== "Premium"; // todo menos premium
-    // basic
+    if (isPro) return c.tag !== "Premium";
     return c.price.toLowerCase().includes("gratis");
   };
-
   const coursesByPlan = courses.filter(courseAllowedByPlan);
 
-  // Filtros UI
+  // Filtros
   const filteredCourses = coursesByPlan.filter((c) => {
     const catOk = activeCat === "Todos" ? true : c.category === activeCat;
     const q = query.trim().toLowerCase();
@@ -113,16 +284,8 @@ export default function Home({ correo }: { correo?: string }) {
     return catOk && qOk;
   });
 
-  // ===== Helpers UI
-  const Chip = ({
-    label,
-    active,
-    onPress,
-  }: {
-    label: string;
-    active: boolean;
-    onPress: () => void;
-  }) => (
+  // UI helpers
+  const Chip = ({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) => (
     <TouchableOpacity onPress={onPress} style={[styles.chip, active && styles.chipActive]}>
       <Text style={[styles.chipTxt, active && styles.chipTxtActive]}>{label}</Text>
     </TouchableOpacity>
@@ -137,15 +300,9 @@ export default function Home({ correo }: { correo?: string }) {
         </View>
       ) : null}
       <View style={styles.courseBody}>
-        <Text numberOfLines={2} style={styles.courseTitle}>
-          {item.title}
-        </Text>
-        <Text numberOfLines={1} style={styles.courseProvider}>
-          {item.provider}
-        </Text>
-        <Text style={styles.courseRating}>
-          {`${item.rating.toFixed(1)} ★ (${item.reviews.toLocaleString()})`}
-        </Text>
+        <Text numberOfLines={2} style={styles.courseTitle}>{item.title}</Text>
+        <Text numberOfLines={1} style={styles.courseProvider}>{item.provider}</Text>
+        <Text style={styles.courseRating}>{`${item.rating.toFixed(1)} ★ (${item.reviews.toLocaleString()})`}</Text>
         <Text style={styles.coursePrice}>{item.price}</Text>
       </View>
     </TouchableOpacity>
@@ -155,41 +312,22 @@ export default function Home({ correo }: { correo?: string }) {
     <TouchableOpacity style={styles.postRow} onPress={() => {}}>
       <Image source={item.image ?? heroImg} style={styles.postImg} />
       <View style={{ flex: 1 }}>
-        <View style={[styles.tag, tagBg(item.tag, theme.colors)]}>
+        <View style={[styles.tag, tagBg(item.tag, theme.colors as Colors)]}>
           <Text style={styles.tagTxt}>{item.tag}</Text>
         </View>
-        <Text numberOfLines={2} style={styles.postTitle}>
-          {item.title}
-        </Text>
-        <Text numberOfLines={2} style={styles.postSummary}>
-          {item.summary}
-        </Text>
+        <Text numberOfLines={2} style={styles.postTitle}>{item.title}</Text>
+        <Text numberOfLines={2} style={styles.postSummary}>{item.summary}</Text>
         <Text style={styles.postDate}>{item.date}</Text>
       </View>
     </TouchableOpacity>
   );
 
-  // ===== Navegar a Subscribe
   const goToSubscribe = (p: { planId: "basic" | "pro" | "premium"; planName: string; price: string }) =>
     nav.navigate("Subscribe", p);
 
-  // ===== Botón de plan (cambia según estado actual)
-  const PlanButton = ({
-    id,
-    name,
-    price,
-  }: {
-    id: "basic" | "pro" | "premium";
-    name: string;
-    price: string;
-  }) => {
-    const isCurrent =
-      (id === "basic" && isBasic) ||
-      (id === "pro" && isPro) ||
-      (id === "premium" && isPremium);
-
+  const PlanButton = ({ id, name, price }: { id: "basic" | "pro" | "premium"; name: string; price: string }) => {
+    const isCurrent = (id === "basic" && isBasic) || (id === "pro" && isPro) || (id === "premium" && isPremium);
     const isPremiumCurrent = id === "premium" && isCurrent;
-
     return (
       <CustomButton
         title={isPremiumCurrent ? "Agendar Q&A" : isCurrent ? "Tu plan" : "Elegir"}
@@ -207,18 +345,12 @@ export default function Home({ correo }: { correo?: string }) {
 
   return (
     <SafeAreaView style={styles.root}>
-      <ScrollView
-        ref={scrollRef}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.content}
-      >
+      <ScrollView ref={scrollRef} showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         {/* HERO */}
         <View style={styles.heroWrap}>
           <View style={styles.heroTint} />
           <View style={styles.heroInner}>
-            <Text style={styles.heroKicker}>
-              Bienvenido{correoMostrar ? `, ${correoMostrar}` : ""}
-            </Text>
+            <Text style={styles.heroKicker}>Bienvenido{correoMostrar ? `, ${correoMostrar}` : ""}</Text>
             <Text style={styles.heroTitle}>Capacítate en Fiscalidad y Operaciones</Text>
             <Text style={styles.heroSub}>
               {isBasic
@@ -239,7 +371,7 @@ export default function Home({ correo }: { correo?: string }) {
             value={query}
             onChangeText={setQuery}
             placeholder="Buscar cursos, temas o categorías…"
-            placeholderTextColor={theme.colors.placeholder}
+            placeholderTextColor={(theme.colors as Colors).placeholder}
             style={styles.searchInput}
           />
         </View>
@@ -248,15 +380,13 @@ export default function Home({ correo }: { correo?: string }) {
         <FlatList
           data={CATEGORIES}
           keyExtractor={(i) => i}
-          renderItem={({ item }) => (
-            <Chip label={item} active={item === activeCat} onPress={() => setActiveCat(item)} />
-          )}
+          renderItem={({ item }) => <Chip label={item} active={item === activeCat} onPress={() => setActiveCat(item)} />}
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.chipsList}
         />
 
-        {/* COURSES (gated) */}
+        {/* COURSES */}
         <View style={styles.sectionHead}>
           <Text style={styles.sectionTitle}>Cursos</Text>
           {!isPremium && (
@@ -338,29 +468,22 @@ export default function Home({ correo }: { correo?: string }) {
           </View>
         </View>
 
-        {/* ===== Q&A MENSUAL (visible solo Premium) ===== */}
+        {/* Q&A (solo Premium) */}
         {isPremium && (
           <View onLayout={onQALayout} style={{ paddingHorizontal: 16, paddingTop: 12 }}>
             <Text style={styles.sectionTitle}>Sesión Q&A mensual (Premium)</Text>
-            <Text style={{ color: theme.colors.subtitle, marginBottom: 8 }}>
-              Agenda una sesión personalizada. Al conectar Google Calendar, se creará el evento con Google Meet.
+            <Text style={{ color: (theme.colors as Colors).subtitle, marginBottom: 8 }}>
+              Crea el evento en Google Calendar con invitación automática.
             </Text>
-            <QAScheduler
-              email={correoMostrar}
-              colors={theme.colors}
-              onNeedUpgrade={() => goToSubscribe({ planId: "premium", planName: "Premium", price: "L 699" })}
-            />
+            <QAScheduler email={correoMostrar} colors={theme.colors as Colors} />
           </View>
         )}
 
         <View style={{ height: 28 }} />
-        <Text style={styles.footerNote}>
-          {`Idioma: ${language.toUpperCase()} • Plan: ${plan.toUpperCase()}`}
-        </Text>
+        <Text style={styles.footerNote}>{`Idioma: ${language.toUpperCase()} • Plan: ${plan.toUpperCase()}`}</Text>
         <View style={{ height: 16 }} />
       </ScrollView>
 
-      {/* Botón WhatsApp: solo Pro o Premium */}
       {(isPro || isPremium) && (
         <FloatingWhatsapp
           phone="50499998888"
@@ -371,40 +494,24 @@ export default function Home({ correo }: { correo?: string }) {
   );
 }
 
-// ====== COMPONENTE: QAScheduler (plantilla lista para Calendar) ======
-function QAScheduler({
-  email,
-  colors,
-  onNeedUpgrade,
-}: {
-  email: string;
-  colors: Colors;
-  onNeedUpgrade: () => void;
-}) {
+// =====================================================
+// ================= QAScheduler =======================
+// =====================================================
+function QAScheduler({ email, colors }: { email: string; colors: Colors }) {
   const c = colors;
   const s = qaStyles(c);
 
-  // estado de conexión a Google Calendar (placeholder)
-  const [googleConnected, setGoogleConnected] = useState(false);
-
-  // formulario
+  const [participantEmail, setParticipantEmail] = useState(email || "");
   const [topic, setTopic] = useState("");
   const [dateStr, setDateStr] = useState(""); // YYYY-MM-DD
-  const [timeStr, setTimeStr] = useState(""); // HH:mm (24h)
-  const [durationMin, setDurationMin] = useState("60"); // minutos
-  const [mode, setMode] = useState<"meet" | "presencial">("meet");
+  const [timeStr, setTimeStr] = useState(""); // HH:mm
+  const [durationMin, setDurationMin] = useState("60");
   const [notes, setNotes] = useState("");
 
   const tz = "America/Tegucigalpa";
 
-  const handleConnectGoogle = () => {
-    // Aquí luego integras OAuth: abrir web auth y guardar token.
-    // Por ahora, simula conexión:
-    setGoogleConnected(true);
-    Alert.alert("Google Calendar", "Conexión simulada. Listo para crear borradores.");
-  };
-
   const validate = () => {
+    if (!participantEmail.trim() || !participantEmail.includes("@")) return "Escribe un correo válido del participante.";
     if (!topic.trim()) return "Escribe un tema.";
     if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return "Fecha inválida (usa YYYY-MM-DD).";
     if (!/^\d{2}:\d{2}$/.test(timeStr)) return "Hora inválida (usa HH:mm).";
@@ -413,63 +520,73 @@ function QAScheduler({
     return null;
   };
 
-  const buildRFC3339 = (yyyyMmDd: string, hhMm: string) => {
-    // Construye timestamps localizados (sin convertir a UTC aquí).
-    // Cuando integres la API, usa timeZone = "America/Tegucigalpa" en el cuerpo del evento.
-    const [y, m, d] = yyyyMmDd.split("-").map((n) => parseInt(n, 10));
-    const [hh, mm] = hhMm.split(":").map((n) => parseInt(n, 10));
-    // Nota: el backend de Google Calendar aceptará { dateTime, timeZone }
+  const buildLocalDateTime = (yyyyMmDd: string, hhMm: string) => {
+    const [y, m, d] = yyyyMmDd.split("-").map(Number);
+    const [hh, mm] = hhMm.split(":").map(Number);
     const pad = (n: number) => String(n).padStart(2, "0");
-    const dateTime = `${y}-${pad(m)}-${pad(d)}T${pad(hh)}:${pad(mm)}:00`;
-    return dateTime;
+    return `${y}-${pad(m)}-${pad(d)}T${pad(hh)}:${pad(mm)}:00`;
   };
 
-  const handleCreateDraft = () => {
+  const toLocalDate = (isoLocal: string) => {
+    const [d, t] = isoLocal.split("T");
+    const [y, m, day] = d.split("-").map(Number);
+    const [hh, mm, ss] = (t || "00:00:00").split(":").map(Number);
+    return new Date(y, (m || 1) - 1, day || 1, hh || 0, mm || 0, ss || 0);
+  };
+
+  const handleCreateEvent = async () => {
     const err = validate();
     if (err) {
       Alert.alert("Campos faltantes", err);
       return;
     }
-    const start = buildRFC3339(dateStr, timeStr);
-    const endDate = new Date(`${dateStr}T${timeStr}:00`);
-    endDate.setMinutes(endDate.getMinutes() + parseInt(durationMin, 10));
+
+    const startISO = buildLocalDateTime(dateStr, timeStr);
+    const start = toLocalDate(startISO);
+    const end = new Date(start.getTime() + parseInt(durationMin, 10) * 60 * 1000);
+
     const pad = (n: number) => String(n).padStart(2, "0");
-    const end = `${endDate.getFullYear()}-${pad(endDate.getMonth() + 1)}-${pad(endDate.getDate())}T${pad(endDate.getHours())}:${pad(endDate.getMinutes())}:00`;
+    const endISO = `${end.getFullYear()}-${pad(end.getMonth() + 1)}-${pad(end.getDate())}T${pad(
+      end.getHours()
+    )}:${pad(end.getMinutes())}:00`;
 
-    // Borrador listo para Google Calendar API v3 (Events.insert)
-    const eventDraft = {
-      summary: `Q&A Premium: ${topic}`,
-      description: notes || "Sesión Q&A mensual (Premium) con CTL.",
-      start: { dateTime: start, timeZone: tz },
-      end: { dateTime: end, timeZone: tz },
-      attendees: email ? [{ email }] : [],
-      conferenceData: mode === "meet" ? { createRequest: { requestId: `${Date.now()}` } } : undefined,
-      location: mode === "presencial" ? "Por definir (presencial)" : undefined,
-      reminders: { useDefault: true },
-    };
+    const attendees = Array.from(new Set([participantEmail.trim(), OWNER_EMAIL].filter(Boolean)));
 
-    // Si ya estuviera conectado, aquí haces la llamada real:
-    // gapi.client.calendar.events.insert({ calendarId: "primary", resource: eventDraft, conferenceDataVersion: 1 })
+    try {
+      const resp = await createCalendarEvent({
+        summary: `Q&A Premium: ${topic}`,
+        description: (notes || "Sesión Q&A (Premium) con CTL.") + `\nZona horaria: ${tz}`,
+        startISO,
+        endISO,
+        timeZone: "America/Tegucigalpa",
+        attendees,
+      });
 
-    console.log("EVENT_DRAFT_READY", eventDraft);
-    Alert.alert(
-      "Borrador listo",
-      googleConnected
-        ? "Listo para enviar a Google Calendar (ver consola)."
-        : "Conecta Google Calendar para crear el evento real."
-    );
+      Alert.alert("Listo ✅ Nuestro equipo se conectará contigo pronto.");
+      setTopic("");
+      setNotes("");
+    } catch (e: any) {
+      console.log("CREATE_EVENT_FAIL", e);
+      Alert.alert("Error", String(e?.message || e) || "No se pudo crear el evento.");
+    }
   };
 
   return (
     <View style={s.card}>
-      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-        <Text style={s.title}>Agendar Q&A</Text>
-        <TouchableOpacity onPress={handleConnectGoogle} style={[s.connectBtn, googleConnected && { opacity: 0.7 }]}>
-          <Text style={s.connectTxt}>{googleConnected ? "Google conectado" : "Conectar Google Calendar"}</Text>
-        </TouchableOpacity>
-      </View>
+      <Text style={s.title}>Agendar Q&A</Text>
 
-      <View style={{ height: 10 }} />
+      <Text style={s.label}>Correo del participante</Text>
+      <TextInput
+        value={participantEmail}
+        onChangeText={setParticipantEmail}
+        placeholder="cliente@correo.com"
+        keyboardType="email-address"
+        autoCapitalize="none"
+        placeholderTextColor={c.placeholder}
+        style={s.input}
+      />
+
+      <View style={{ height: 8 }} />
 
       <Text style={s.label}>Tema</Text>
       <TextInput
@@ -522,18 +639,12 @@ function QAScheduler({
         <View style={{ flex: 1 }}>
           <Text style={s.label}>Modalidad</Text>
           <View style={{ flexDirection: "row", gap: 8 }}>
-            <TouchableOpacity
-              onPress={() => setMode("meet")}
-              style={[s.chip, mode === "meet" && s.chipActive]}
-            >
-              <Text style={[s.chipTxt, mode === "meet" && s.chipTxtActive]}>Meet</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setMode("presencial")}
-              style={[s.chip, mode === "presencial" && s.chipActive]}
-            >
-              <Text style={[s.chipTxt, mode === "presencial" && s.chipTxtActive]}>Presencial</Text>
-            </TouchableOpacity>
+            <View style={[s.chip]}>
+              <Text style={s.chipTxt}>Meet</Text>
+            </View>
+            <View style={[s.chip]}>
+              <Text style={s.chipTxt}>Presencial</Text>
+            </View>
           </View>
         </View>
       </View>
@@ -551,188 +662,11 @@ function QAScheduler({
       />
 
       <View style={{ height: 12 }} />
-      <CustomButton
-        title={googleConnected ? "Crear evento en Calendar" : "Crear borrador (conectar Google para enviar)"}
-        onPress={handleCreateDraft}
-      />
+      <CustomButton title="Crear evento en Calendar" onPress={handleCreateEvent} />
 
       <Text style={s.helper}>
-        Zona horaria: America/Tegucigalpa. Cuando conectes Google, el evento se creará con Meet y se enviará a tu calendario.
+        Se invitará a: {participantEmail || "—"} y {OWNER_EMAIL}. Zona horaria: America/Tegucigalpa.
       </Text>
     </View>
   );
 }
-
-// ===== helpers =====
-const tagBg = (tag: Post["tag"], c: any) => {
-  switch (tag) {
-    case "Gaceta":
-      return { backgroundColor: "#5B8DEF20" };
-    case "Aduanas":
-      return { backgroundColor: "#34C75920" };
-    case "Actualización":
-      return { backgroundColor: "#FFD60A20" };
-    default:
-      return { backgroundColor: c.card };
-  }
-};
-
-type Colors = {
-  background: string;
-  card: string;
-  text: string;
-  subtitle: string;
-  primary: string;
-  border: string;
-  inputBg: string;
-  inputText: string;
-  placeholder: string;
-  buttonText: string;
-};
-
-const makeStyles = (c: Colors) =>
-  StyleSheet.create({
-    root: { flex: 1, backgroundColor: c.background },
-    content: { paddingBottom: 24 },
-
-    heroWrap: {
-      height: 240,
-      marginBottom: 8,
-      overflow: "hidden",
-      borderBottomLeftRadius: 24,
-      borderBottomRightRadius: 24,
-    },
-    heroTint: { ...StyleSheet.absoluteFillObject, backgroundColor: c.background, opacity: 0.35 },
-    heroInner: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 16, gap: 6 },
-    heroKicker: { color: c.text, opacity: 0.9, fontWeight: "700" },
-    heroTitle: { color: c.text, fontSize: 22, fontWeight: "900", textAlign: "center" },
-    heroSub: { color: c.subtitle, textAlign: "center", marginBottom: 10 },
-
-    searchWrap: { paddingHorizontal: 16, marginTop: 4 },
-    searchInput: {
-      backgroundColor: c.inputBg,
-      color: c.inputText,
-      borderWidth: 1,
-      borderColor: c.border,
-      borderRadius: 12,
-      paddingHorizontal: 14,
-      paddingVertical: 10,
-    },
-
-    chipsList: { paddingHorizontal: 10, paddingVertical: 12, gap: 8 },
-    chip: {
-      paddingHorizontal: 12,
-      paddingVertical: 8,
-      borderRadius: 999,
-      backgroundColor: c.card,
-      borderWidth: 1,
-      borderColor: c.border,
-      marginHorizontal: 4,
-    },
-    chipActive: { backgroundColor: c.primary, borderColor: c.primary },
-    chipTxt: { color: c.text },
-    chipTxtActive: { color: c.buttonText, fontWeight: "700" },
-
-    sectionHead: {
-      paddingHorizontal: 16,
-      paddingTop: 6,
-      paddingBottom: 6,
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-    },
-    sectionTitle: { color: c.text, fontSize: 18, fontWeight: "800" },
-    link: { color: c.subtitle },
-
-    coursesList: { paddingHorizontal: 12, gap: 12 },
-    courseCard: {
-      width: 250,
-      backgroundColor: c.card,
-      borderRadius: 14,
-      overflow: "hidden",
-      borderWidth: 1,
-      borderColor: c.border,
-      marginHorizontal: 6,
-    },
-    courseImg: { width: "100%", height: 120, backgroundColor: c.border },
-    courseBody: { padding: 10, gap: 4 },
-    courseTitle: { color: c.text, fontWeight: "800" },
-    courseProvider: { color: c.subtitle },
-    courseRating: { color: c.text, opacity: 0.9 },
-    coursePrice: { color: c.text, fontWeight: "900", marginTop: 4 },
-    badge: {
-      position: "absolute",
-      left: 10,
-      top: 10,
-      backgroundColor: "#E9F5D0",
-      paddingHorizontal: 8,
-      paddingVertical: 4,
-      borderRadius: 6,
-    },
-    badgeTxt: { color: "#2E7D32", fontSize: 12, fontWeight: "700" },
-
-    postRow: { flexDirection: "row", gap: 12, paddingVertical: 10, alignItems: "center", paddingHorizontal: 16 },
-    postImg: { width: 92, height: 64, borderRadius: 8, backgroundColor: c.border },
-    tag: { alignSelf: "flex-start", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, marginBottom: 4 },
-    tagTxt: { color: c.text, fontSize: 12 },
-    postTitle: { color: c.text, fontWeight: "800", fontSize: 16 },
-    postSummary: { color: c.subtitle, marginTop: 2 },
-    postDate: { color: c.subtitle, marginTop: 4, fontSize: 12 },
-    sep: { height: 1, backgroundColor: c.border, marginHorizontal: 16 },
-
-    pricingWrap: { paddingHorizontal: 12, gap: 10, marginTop: 6 },
-    planCard: { backgroundColor: c.card, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: c.border },
-    planPro: { borderColor: c.primary, shadowColor: c.primary, shadowOpacity: 0.2, shadowRadius: 8, elevation: 3 },
-    planName: { color: c.text, fontSize: 16, fontWeight: "800" },
-    planPrice: { color: c.text, fontSize: 22, fontWeight: "900", marginVertical: 2 },
-    planDesc: { color: c.subtitle, marginBottom: 6 },
-    planDivider: { height: 1, backgroundColor: c.border, opacity: 0.5, marginVertical: 8 },
-    planItem: { color: c.subtitle, marginBottom: 2 },
-
-    emptyBox: { marginHorizontal: 16, padding: 14, borderRadius: 12, borderWidth: 1, borderColor: c.border, alignItems: "center" },
-    emptyTxt: { color: c.subtitle },
-    footerNote: { color: c.subtitle, textAlign: "center" },
-  });
-
-// ===== estilos del scheduler =====
-const qaStyles = (c: Colors) =>
-  StyleSheet.create({
-    card: {
-      backgroundColor: c.card,
-      borderRadius: 14,
-      padding: 14,
-      borderWidth: 1,
-      borderColor: c.border,
-      gap: 6,
-    },
-    title: { color: c.text, fontSize: 18, fontWeight: "800" },
-    label: { color: c.subtitle, marginBottom: 4 },
-    input: {
-      backgroundColor: c.inputBg,
-      color: c.inputText,
-      borderWidth: 1,
-      borderColor: c.border,
-      borderRadius: 10,
-      paddingHorizontal: 12,
-      paddingVertical: 10,
-    },
-    chip: {
-      paddingHorizontal: 12,
-      paddingVertical: 8,
-      borderRadius: 999,
-      backgroundColor: c.card,
-      borderWidth: 1,
-      borderColor: c.border,
-    },
-    chipActive: { backgroundColor: c.primary, borderColor: c.primary },
-    chipTxt: { color: c.text },
-    chipTxtActive: { color: c.buttonText, fontWeight: "700" },
-    connectBtn: {
-      paddingHorizontal: 12,
-      paddingVertical: 8,
-      borderRadius: 10,
-      backgroundColor: c.primary,
-    },
-    connectTxt: { color: c.buttonText, fontWeight: "700" },
-    helper: { color: c.subtitle, marginTop: 8, fontSize: 12 },
-  });
