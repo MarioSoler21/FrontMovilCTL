@@ -45,6 +45,8 @@ type Course = {
   tag?: "Nuevo" | "Pro" | "Premium";
   thumb?: any;
   category: string;
+  youtubeId: string;   // ← añadido
+  preview: string;     // ← añadido
 };
 
 type Post = {
@@ -249,13 +251,176 @@ export default function Home({ correo }: { correo?: string }) {
   const onQALayout = (e: LayoutChangeEvent) => setQaY(e.nativeEvent.layout.y);
   const scrollToQA = () => scrollRef.current?.scrollTo({ y: qaY - 12, animated: true });
 
-  // Data mock
+  // Data mock (con youtubeId + preview)
+  // Data mock (con youtubeId + preview) — REEMPLAZA TODO ESTE BLOQUE
   const courses: Course[] = [
-    { id: "c1", title: "SAR: Declaración Mensual paso a paso", provider: "CTL Academy", rating: 4.8, reviews: 2201, price: "Gratis", tag: "Nuevo", thumb: heroImg, category: "SAR" },
-    { id: "c2", title: "Excel Financiero para KPI y Tableros", provider: "CTL Academy", rating: 4.7, reviews: 1754, price: "L 299", tag: "Pro", thumb: heroImg, category: "Excel Financiero" },
-    { id: "c3", title: "Aduanas: Cálculo CIF, DAI y ejemplos", provider: "CTL Academy", rating: 4.6, reviews: 1380, price: "L 399", thumb: heroImg, category: "Aduanas" },
-    { id: "c4", title: "Auditoría Fiscal: pruebas y papeles de trabajo", provider: "CTL Academy", rating: 4.7, reviews: 980, price: "L 699", tag: "Premium", thumb: heroImg, category: "Auditoría" },
+    // SAR
+    {
+      id: "c1",
+      title: "SAR: Declaración Mensual paso a paso",
+      provider: "CTL Academy",
+      rating: 4.8,
+      reviews: 2201,
+      price: "Gratis",
+      tag: "Nuevo",
+      thumb: heroImg,
+      category: "SAR",
+      youtubeId: "-tcTb3N2DbY",
+      preview: "Aprende a preparar y presentar tu declaración SAR mensual de inicio a fin con ejemplos prácticos.",
+    },
+    {
+      id: "c5",
+      title: "SAR: Retenciones de ISV y compras exentas",
+      provider: "CTL Academy",
+      rating: 4.7,
+      reviews: 1560,
+      price: "L 299",
+      tag: "Pro",
+      thumb: heroImg,
+      category: "SAR",
+      youtubeId: "e2m8a0Q9Abc",
+      preview: "Configura retenciones y maneja compras exentas sin errores en tu contabilidad mensual.",
+    },
+
+    // SPS
+    {
+      id: "c6",
+      title: "SPS: Registro patronal y planillas",
+      provider: "CTL Academy",
+      rating: 4.6,
+      reviews: 1210,
+      price: "L 299",
+      tag: "Pro",
+      thumb: heroImg,
+      category: "SPS",
+      youtubeId: "9cWmWq1sF1o",
+      preview: "Del alta patronal al envío de planillas, flujo completo con checklist descargable.",
+    },
+    {
+      id: "c7",
+      title: "SPS: Cálculo de aportaciones y multas",
+      provider: "CTL Academy",
+      rating: 4.6,
+      reviews: 930,
+      price: "L 399",
+      thumb: heroImg,
+      category: "SPS",
+      youtubeId: "1JtY2dNnP3U",
+      preview: "Evita sanciones con un cálculo correcto de aportaciones y recargos, con casos reales.",
+    },
+
+    // Excel Financiero
+    {
+      id: "c2",
+      title: "Excel Financiero para KPI y Tableros",
+      provider: "CTL Academy",
+      rating: 4.7,
+      reviews: 1754,
+      price: "L 299",
+      tag: "Pro",
+      thumb: heroImg,
+      category: "Excel Financiero",
+      youtubeId: "pLZ1Y8gP0qk",
+      preview: "Tableros, KPIs y fórmulas clave para controlar costos, margen y flujo de caja en Excel.",
+    },
+    {
+      id: "c8",
+      title: "Excel: Modelos de costos y márgenes",
+      provider: "CTL Academy",
+      rating: 4.7,
+      reviews: 1102,
+      price: "L 399",
+      thumb: heroImg,
+      category: "Excel Financiero",
+      youtubeId: "q3mD5QX5k0Y",
+      preview: "Construye un modelo de costos con sensibilidad de precios, margen y punto de equilibrio.",
+    },
+
+    // Aduanas
+    {
+      id: "c3",
+      title: "Aduanas: Cálculo CIF, DAI y ejemplos",
+      provider: "CTL Academy",
+      rating: 4.6,
+      reviews: 1380,
+      price: "L 399",
+      thumb: heroImg,
+      category: "Aduanas",
+      youtubeId: "q9F3OeY2v9E",
+      preview: "Calcula CIF y DAI con casos reales y evita errores frecuentes al nacionalizar mercancías.",
+    },
+    {
+      id: "c9",
+      title: "Aduanas: Clasificación arancelaria básica",
+      provider: "CTL Academy",
+      rating: 4.5,
+      reviews: 860,
+      price: "Gratis",
+      tag: "Nuevo",
+      thumb: heroImg,
+      category: "Aduanas",
+      youtubeId: "Xw8J1v0n7Rs",
+      preview: "Guía introductoria para clasificar mercancías con seguridad y ahorrar tiempo en trámites.",
+    },
+
+    // Auditoría
+    {
+      id: "c4",
+      title: "Auditoría Fiscal: pruebas y papeles de trabajo",
+      provider: "CTL Academy",
+      rating: 4.7,
+      reviews: 980,
+      price: "L 699",
+      tag: "Premium",
+      thumb: heroImg,
+      category: "Auditoría",
+      youtubeId: "xX3lY8TtM1c",
+      preview: "Metodologías, riesgos y papeles de trabajo para auditorías fiscales eficientes.",
+    },
+    {
+      id: "c10",
+      title: "Auditoría de cumplimiento: checklist y hallazgos",
+      provider: "CTL Academy",
+      rating: 4.7,
+      reviews: 1040,
+      price: "L 699",
+      tag: "Premium",
+      thumb: heroImg,
+      category: "Auditoría",
+      youtubeId: "mN7G0Q9pTgU",
+      preview: "Prepara un checklist efectivo y documenta hallazgos con evidencia y materialidad.",
+    },
+
+    // Consultoría Fiscal
+    {
+      id: "c11",
+      title: "Consultoría Fiscal: diagnóstico express",
+      provider: "CTL Academy",
+      rating: 4.6,
+      reviews: 770,
+      price: "Gratis",
+      tag: "Nuevo",
+      thumb: heroImg,
+      category: "Consultoría Fiscal",
+      youtubeId: "2HjvZxT1KkE",
+      preview: "Aprende a realizar un diagnóstico rápido para detectar riesgos y oportunidades tributarias.",
+    },
+    {
+      id: "c12",
+      title: "Consultoría Fiscal: estructura de honorarios",
+      provider: "CTL Academy",
+      rating: 4.6,
+      reviews: 690,
+      price: "L 299",
+      tag: "Pro",
+      thumb: heroImg,
+      category: "Consultoría Fiscal",
+      youtubeId: "Bf0wY2rQ9sE",
+      preview: "Cómo cotizar: alcance, entregables, valor vs. horas y manejo de revisiones.",
+    },
   ];
+
+
   const posts: Post[] = [
     { id: "p1", title: "Reformas fiscales publicadas en La Gaceta (jul 2025)", tag: "Gaceta", date: "Jul 18", summary: "Cambios clave…", image: heroImg },
     { id: "p2", title: "Aduanas: nueva tabla de aranceles para repuestos", tag: "Aduanas", date: "Jul 15", summary: "Ejemplos prácticos…", image: heroImg },
@@ -292,7 +457,10 @@ export default function Home({ correo }: { correo?: string }) {
   );
 
   const CourseCard = ({ item }: { item: Course }) => (
-    <TouchableOpacity style={styles.courseCard} onPress={() => {}}>
+    <TouchableOpacity
+      style={styles.courseCard}
+      onPress={() => nav.navigate("CourseDetail", { course: item })} // ← navegación a CourseDetail
+    >
       <Image source={item.thumb ?? heroImg} style={styles.courseImg} />
       {item.tag ? (
         <View style={styles.badge}>
@@ -411,21 +579,23 @@ export default function Home({ correo }: { correo?: string }) {
           </View>
         )}
 
-        {/* POSTS */}
-        <View style={styles.sectionHead}>
-          <Text style={styles.sectionTitle}>Novedades</Text>
-          <TouchableOpacity>
-            <Text style={styles.link}>Ver todo</Text>
-          </TouchableOpacity>
-        </View>
-        <FlatList
-          data={posts}
-          keyExtractor={(i) => i.id}
-          renderItem={PostRow}
-          scrollEnabled={false}
-          ItemSeparatorComponent={() => <View style={styles.sep} />}
-          contentContainerStyle={{ paddingHorizontal: 16 }}
-        />
+      {/* POSTS */}
+<View style={styles.sectionHead}>
+  <Text style={styles.sectionTitle}>Novedades</Text>
+  <TouchableOpacity>
+    <Text style={styles.link}>Ver todo</Text>
+  </TouchableOpacity>
+</View>
+
+<View style={{ paddingHorizontal: 16 }}>
+  {posts.map((item, idx) => (
+    <React.Fragment key={item.id}>
+      <PostRow item={item} />
+      {idx < posts.length - 1 ? <View style={styles.sep} /> : null}
+    </React.Fragment>
+  ))}
+</View>
+
 
         {/* PRICING / PLANES */}
         <View style={styles.sectionHead}>
@@ -553,7 +723,7 @@ function QAScheduler({ email, colors }: { email: string; colors: Colors }) {
     const attendees = Array.from(new Set([participantEmail.trim(), OWNER_EMAIL].filter(Boolean)));
 
     try {
-      const resp = await createCalendarEvent({
+      await createCalendarEvent({
         summary: `Q&A Premium: ${topic}`,
         description: (notes || "Sesión Q&A (Premium) con CTL.") + `\nZona horaria: ${tz}`,
         startISO,

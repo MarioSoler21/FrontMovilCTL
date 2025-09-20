@@ -1,6 +1,5 @@
 // App.tsx
 import "react-native-gesture-handler";
-
 import React from "react";
 import { StatusBar } from "react-native";
 import { NavigationContainer, Theme as NavTheme } from "@react-navigation/native";
@@ -13,7 +12,8 @@ import { LanguageProvider } from "./src/contexts/LanguageContext";
 import Login from "./src/screens/Login";
 import MainTabs from "./src/screens/MainTabs";
 import Register from "./src/screens/Register";
-import Subscribe from "./src/screens/Subscribe"; 
+import Subscribe from "./src/screens/Subscribe";
+import CourseDetail from "./src/screens/CourseDetail"; // 👈 IMPORTA ESTO
 
 export type RootStackParamList = {
   Login: { prefillEmail?: string } | undefined;
@@ -28,7 +28,24 @@ export type RootStackParamList = {
     | {
         planId: "basic" | "pro" | "premium";
         planName: string;
-        price: string; 
+        price: string;
+      }
+    | undefined;
+  CourseDetail:
+    | {
+        course: {
+          id: string;
+          title: string;
+          provider: string;
+          rating: number;
+          reviews: number;
+          price: string;
+          tag?: "Nuevo" | "Pro" | "Premium";
+          thumb?: any;
+          category: string;
+          youtubeId: string;
+          preview: string;
+        };
       }
     | undefined;
 };
@@ -39,22 +56,24 @@ function RootNavigator() {
   const { isAllowed } = useAuth();
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName={isAllowed ? "MainScreen" : "Login"}>
-      {isAllowed ? (
-        <Stack.Group>
-          <Stack.Screen name="MainScreen" component={MainTabs} />
-          <Stack.Screen name="Subscribe" component={Subscribe} />
-        </Stack.Group>
-      ) : (
-        <Stack.Group>
-          <Stack.Screen name="Login" component={Login} />
-          <Stack.Screen name="RegisterScreen" component={Register} />
-          <Stack.Screen name="Subscribe" component={Subscribe} />
-        </Stack.Group>
-      )}
+    <Stack.Navigator
+      screenOptions={{ headerShown: false }}
+      initialRouteName={isAllowed ? "MainScreen" : "Login"}
+    >
+      {/* Rutas públicas */}
+      <Stack.Screen name="Login" component={Login} />
+      <Stack.Screen name="RegisterScreen" component={Register} />
+
+      {/* Rutas comunes */}
+      <Stack.Screen name="Subscribe" component={Subscribe} />
+      <Stack.Screen name="CourseDetail" component={CourseDetail} />
+
+      {/* Rutas privadas */}
+      <Stack.Screen name="MainScreen" component={MainTabs} />
     </Stack.Navigator>
   );
 }
+
 
 function AppNavigator() {
   const { theme } = useTheme();
@@ -73,10 +92,7 @@ function AppNavigator() {
 
   return (
     <NavigationContainer theme={navTheme}>
-      <StatusBar
-        barStyle={theme.isDark ? "light-content" : "dark-content"}
-        backgroundColor={theme.colors.background}
-      />
+      <StatusBar barStyle={theme.isDark ? "light-content" : "dark-content"} backgroundColor={theme.colors.background} />
       <RootNavigator />
     </NavigationContainer>
   );

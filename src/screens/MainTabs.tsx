@@ -32,12 +32,19 @@ export default function MainTabs() {
 
   const renderScreen = () => {
     switch (tab) {
-      case "featured": return <Featured />;
-      case "search":   return <Search />;
-      case "learning": return <Home />;
-      case "wishlist": return <Wishlist />;
-      case "account":  return <Account />; // aquí está el switch de tema
-      default:         return null;
+      case "featured":
+        // 👈 pasamos callback para que "Ver todo" lleve a Home
+        return <Featured onSeeAll={() => setTab("learning")} />;
+      case "search":
+        return <Search />;
+      case "learning":
+        return <Home />;
+      case "wishlist":
+        return <Wishlist />;
+      case "account":
+        return <Account />;
+      default:
+        return null;
     }
   };
 
@@ -51,7 +58,7 @@ export default function MainTabs() {
         borderColor={theme.colors.border}
         activeColor={theme.colors.text}
         inactiveColor={theme.colors.subtitle}
-        themeSwitch={{ isDark: theme.isDark, onToggle: toggleTheme }} // si quieres también desde la barra
+        themeSwitch={{ isDark: theme.isDark, onToggle: toggleTheme }}
       />
     </View>
   );
